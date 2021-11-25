@@ -143,7 +143,7 @@ class signinAPI(APIView):
             except IntegrityError:
                 token = Token.objects.get(user=user)
             return JsonResponse(OK_200(data={"token": token.key}), status=200)
-        return JsonResponse(CUSTOM_CODE(status=401, message="Invalid info", data={"token": ""}), status=401)
+        return JsonResponse(CUSTOM_CODE(status=202, message="Invalid info", data={"token": ""}), status=202)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -184,7 +184,7 @@ class garbage_output_api(APIView):
         except ValueError:
             return JsonResponse(BAD_REQUEST_400(message='Invalid amount', data=returnData, status=400))
         returnData["amount"] = int(garbageModel.amount)
-        return JsonResponse(OK_200(data=returnData, status=200), status=200)
+        return JsonResponse(OK_200(data=returnData), status=200)
 
     def get(self, request):
         returnData = {"amount": 0}
@@ -229,13 +229,10 @@ class marketPostAPI(APIView):
         marketPostModel.save()
         returnData["pk"] = marketPostModel.primaryKey
         try:
-            imageList = request.FILES.getlist['image']
-            imageCount = 1
-            for image in imageList:
-                imageModel = marketPostImage(postModel=marketPostModel, image=image, order=imageCount)
-                imageModel.save()
-                imageCount += 1
-        except (KeyError, ValueError):
+            imageList = request.FILES['image']
+            imageModel = marketPostImage(postModel=marketPostModel, image=imageList)
+            imageModel.save()
+        except (KeyError, ValueError, TypeError):
             pass
         return JsonResponse(OK_200(data=returnData))
 
@@ -338,13 +335,10 @@ class artPostAPI(APIView):
         artPostModel.save()
         returnData["pk"] = artPostModel.primaryKey
         try:
-            imageList = request.FILES.getlist['image']
-            imageCount = 1
-            for image in imageList:
-                imageModel = artPostImage(postModel=artPostModel, image=image, order=imageCount)
-                imageModel.save()
-                imageCount += 1
-        except (KeyError, ValueError):
+            imageList = request.FILES['image']
+            imageModel = artPostImage(postModel=artPostModel, image=imageList)
+            imageModel.save()
+        except (KeyError, ValueError, TypeError):
             pass
         return JsonResponse(OK_200(data=returnData))
 
@@ -376,7 +370,7 @@ class artPostAPI(APIView):
                 returnData["postList"].append(postForm)
             return JsonResponse(OK_200(data=returnData), status=200)
         try:
-            post = marketPost.objects.get(primaryKey=int(pk))
+            post = artPost.objects.get(primaryKey=int(pk))
             postForm = {
                 'pk': post.primaryKey,
                 'title': post.title,
@@ -419,13 +413,10 @@ class challengePostAPI(APIView):
         challengePostModel.save()
         returnData["pk"] = challengePostModel.primaryKey
         try:
-            imageList = request.FILES.getlist['image']
-            imageCount = 1
-            for image in imageList:
-                imageModel = challengePostImage(postModel=challengePostModel, image=image, order=imageCount)
-                imageModel.save()
-                imageCount += 1
-        except (KeyError, ValueError):
+            imageList = request.FILES['image']
+            imageModel = challengePostImage(postModel=challengePostModel, image=imageList)
+            imageModel.save()
+        except (KeyError, ValueError, TypeError):
             pass
         return JsonResponse(OK_200(data=returnData))
 
@@ -480,3 +471,56 @@ class challengePostAPI(APIView):
         except ObjectDoesNotExist:
             return JsonResponse(CUSTOM_CODE(status=404, message="There is no Exiting post", data=returnData), status=404)
         return JsonResponse(OK_200(data=returnData), status=200)
+
+
+# @method_decorator(csrf_exempt, name='dispatch')
+# class userInfoAPI(APIView):
+#     def get(self, request):
+#         returnData = {
+#             "userID": "",
+#             "kakaoID": "",
+#             "openChat": "",
+#             "instagram": "",
+#             "postList": []
+#         }
+#         if not request.user.is_authenticated or request.user.is_anonymous:
+#             userModel = request.user
+#         else:
+#             try:
+#                 userpk = request.query_params['pk']
+#                 userModel = User.objects.get(primaryKey=userpk)
+#             except (KeyError, ValueError):
+#                 return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
+#             except ObjectDoesNotExist:
+#                 return JsonResponse(CUSTOM_CODE(status=404, message="There is no Exiting user", data=returnData), status=404)
+#         returnData["userID"] = userModel.username
+#         try:
+#             userInfoObject = userInfo.objects.get(user=userModel)
+#             returnData["kakaoID"] = userInfoObject.kakaoID
+#             returnData["openChat"] = userInfoObject.openChat
+#             returnData["instagram"] = userInfoObject.instagram
+#         except ObjectDoesNotExist:
+#             pass
+#         postList = []
+#         try:
+#             marketPostObjects = marketPost.objects.filter(author=userModel)
+#             marketPostObjects = list(marketPostObjects)
+#             for marketPostObject in marketPostObjects:
+#                 try:
+#                     marketPostImage.objects.get(postModel=marketPostObject)
+#         except ObjectDoesNotExist:
+#             pass
+#         try:
+#             artPostObjects = artPost.objects.filter(author=userModel)
+#             artPostObjects = list(artPostObjects)
+#         except ObjectDoesNotExist:
+#             pass
+#         try:
+#             challengePostObjects = challengePost.objects.filter(author=userModel)
+#             challengePostObjects = list(challengePostObjects)
+#         except ObjectDoesNotExist:
+#             pass
+#
+#
+#
+#
