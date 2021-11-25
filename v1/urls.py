@@ -15,6 +15,8 @@ urlpatterns = [
     path('user/data/garbage-output/', views.garbage_output_api.as_view(), name='index'),
     path('post/market', views.marketPostAPI.as_view(), name='index'),
     path('post/market/', views.marketPostAPI.as_view(), name='index'),
+    path('post/market/connect', views.connectUser.as_view(), name='index'),
+    path('post/market/connect/', views.connectUser.as_view(), name='index'),
     path('post/junk-art', views.artPostAPI.as_view(), name='index'),
     path('post/junk-art/', views.artPostAPI.as_view(), name='index'),
 ]

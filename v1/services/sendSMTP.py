@@ -45,7 +45,7 @@ def template(payload):
             >
               <img
                 style="width: 50px; margin-bottom: 25px"
-                src="https://cdn.discordapp.com/attachments/873888419972010034/887209876042940426/favicon.png"
+                src="https://cdn.discordapp.com/attachments/819001182369611807/913311270306996224/unknown.png"
                 alt="logo"
               />
               <br />

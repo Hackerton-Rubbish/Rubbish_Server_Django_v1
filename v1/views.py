@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
 from .models import *
 
 from .services.returnStatsForm import *
@@ -132,11 +133,14 @@ class signinAPI(APIView):
             passwd = request.data['passwd']
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
-        try:
-            token = Token.objects.create(user=request.user)
-        except IntegrityError:
-            token = Token.objects.get(user=request.user)
-        return JsonResponse(OK_200(data={"token": token.key}), status=200)
+        user = authenticate(nickname=nickname, password=passwd)
+        if user is not None:
+            try:
+                token = Token.objects.create(user=user)
+            except IntegrityError:
+                token = Token.objects.get(user=user)
+            return JsonResponse(OK_200(data={"token": token.key}), status=200)
+        return JsonResponse(CUSTOM_CODE(status=401, message="Invalid info", data={"token": ""}), status=401)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -289,6 +293,30 @@ class marketPostAPI(APIView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
+class connectUser(APIView):
+    def post(self, request):
+        returnData = {
+            "kakaoID": "",
+            "openChat": "",
+            "instagram": ""
+        }
+        try:
+            pk = request.query_params['pk']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
+        try:
+            post = marketPost.objects.get(primaryKey=int(pk))
+        except ObjectDoesNotExist:
+            return JsonResponse(CUSTOM_CODE(status=404, message="There is no Exiting post", data=returnData), status=404)
+        userObjectData = post.author
+        userObjectData = userInfo.objects.get(user=userObjectData)
+        returnData["kakaoID"] = userObjectData.kakaoID
+        returnData["openChat"] = userObjectData.openChat
+        returnData["instagram"] = userObjectData.instagram
+        return JsonResponse(OK_200(data=returnData), status=200)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class artPostAPI(APIView):
     def post(self, request):
         returnData = {"pk": 0}
@@ -365,3 +393,10 @@ class artPostAPI(APIView):
         except ObjectDoesNotExist:
             return JsonResponse(CUSTOM_CODE(status=404, message="There is no Exiting post", data=returnData), status=404)
         return JsonResponse(OK_200(data=returnData), status=200)
+
+
+# @method_decorator(csrf_exempt, name='dispatch')
+# class artPostAPI(APIView):
+#     def post(self, request):
+
+

@@ -24,7 +24,8 @@ INSTALLED_APPS = [
     'v1',
     'rest_framework',
     'rest_framework.authtoken',
-    'imagekit'
+    'imagekit',
+    'sslserver'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
