@@ -107,7 +107,7 @@ class signupInfoInput(APIView):
             pass
         if returnData['validPassword']:
             try:
-                userModel = User(
+                userModel = User.objects.create_user(
                     email=email,
                     username=nickname,
                     password=passwd,

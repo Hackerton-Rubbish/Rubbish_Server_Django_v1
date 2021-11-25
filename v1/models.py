@@ -8,18 +8,18 @@ from imagekit.models import ProcessedImageField
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self,  password=None, username='익명', **extra_fields):
-        user = self.model(password=password, username=username, **extra_fields)
+    def _create_user(self, email, password=None, username='익명', **extra_fields):
+        user = self.model(email=email, password=password, username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
         return user
 
-    def create_user(self, password=None, username='익명', **extra_fields):
+    def create_user(self, email, password=None, username='익명', **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(password, username, **extra_fields)
+        return self._create_user(email, password, username, **extra_fields)
 
-    def create_superuser(self, password, username='Admin', **extra_fields):
+    def create_superuser(self, email, password, username='Admin', **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -28,7 +28,7 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError("Administrator must be 'is_superuser' is True")
 
-        return self._create_user(password, username, **extra_fields)
+        return self._create_user(email, password, username, **extra_fields)
 
 
 class emailAuth(models.Model):
@@ -47,7 +47,7 @@ class User(AbstractUser):
     region = models.CharField(max_length=50, default='서울', null=False, blank=True)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['email']
     date_joined = models.DateTimeField('date joined', default=timezone.now)
 
     def __str__(self):
