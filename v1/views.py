@@ -237,9 +237,7 @@ class marketPostAPI(APIView):
         return JsonResponse(OK_200(data=returnData))
 
     def get(self, request):
-        returnData = {
-            "postList": []
-        }
+        returnData = {"postList": []}
         try:
             pk = request.query_params['pk']
         except (KeyError, ValueError):
@@ -253,7 +251,7 @@ class marketPostAPI(APIView):
                     'pk': post.primaryKey,
                     'trashKind': post.trashKind,
                     'postKind': post.postKind,
-                    'author': post.author,
+                    'author': post.author.username,
                     'qty': post.qty,
                     'location': post.author.region,
                     'content': post.content,
@@ -261,7 +259,7 @@ class marketPostAPI(APIView):
                     'image': []
                 }
                 try:
-                    postForm["image"].append(marketPostImage.objects.get(postModel=post, order=1).image)
+                    postForm["image"].append(marketPostImage.objects.get(postModel=post).image)
                 except ObjectDoesNotExist:
                     pass
                 returnData["postList"].append(postForm)
@@ -364,7 +362,7 @@ class artPostAPI(APIView):
                     'image': []
                 }
                 try:
-                    postForm["image"].append(artPostImage.objects.get(postModel=post, order=1).image)
+                    postForm["image"].append(artPostImage.objects.get(postModel=post).image)
                 except ObjectDoesNotExist:
                     pass
                 returnData["postList"].append(postForm)
@@ -444,7 +442,7 @@ class challengePostAPI(APIView):
                     'image': []
                 }
                 try:
-                    postForm["image"].append(artPostImage.objects.get(postModel=post, order=1).image)
+                    postForm["image"].append(artPostImage.objects.get(postModel=post).image)
                 except ObjectDoesNotExist:
                     pass
                 returnData["postList"].append(postForm)
