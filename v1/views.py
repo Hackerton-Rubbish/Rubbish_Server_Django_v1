@@ -184,8 +184,8 @@ class garbage_output_api(APIView):
         if not request.user.is_authenticated or request.user.is_anonymous:
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
         try:
-            year = request.data['year']
-            month = request.data['month']
+            year = request.query_params['year']
+            month = request.query_params['month']
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
         if int(month) > 12:
@@ -207,6 +207,7 @@ class marketPostAPI(APIView):
         try:
             postKind = request.data['postKind']
             trashKind = request.data['trashKind']
+            content = request.data['content']
             qty = request.data['qty']
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
@@ -214,6 +215,7 @@ class marketPostAPI(APIView):
             postKind=postKind,
             trashKind=trashKind,
             qty=qty,
+            content=content,
             location=request.user.region,
             author=request.user
         )
@@ -235,7 +237,7 @@ class marketPostAPI(APIView):
             "postList": []
         }
         try:
-            pk = request.data['pk']
+            pk = request.query_params['pk']
         except (KeyError, ValueError):
             try:
                 post_list = marketPost.objects.all().order_by('created_at')
@@ -244,14 +246,18 @@ class marketPostAPI(APIView):
                 return JsonResponse(OK_200(data=returnData), status=200)
             for post in post_list:
                 postForm = {
+                    'pk': post.primaryKey,
                     'trashKind': post.trashKind,
+                    'postKind': post.postKind,
                     'author': post.author,
                     'qty': post.qty,
                     'location': post.author.region,
-                    'previewImage': ''
+                    'content': post.content,
+                    'created_at': str(post.created_at.strftime("%Y-%m-%d %H:%M:%S")),
+                    'image': []
                 }
                 try:
-                    postForm["previewImage"] = marketPostImage.objects.get(postModel=post, order=1)
+                    postForm["image"].append(marketPostImage.objects.get(postModel=post, order=1).image)
                 except ObjectDoesNotExist:
                     pass
                 returnData["postList"].append(postForm)
@@ -259,19 +265,103 @@ class marketPostAPI(APIView):
         try:
             post = marketPost.objects.get(primaryKey=int(pk))
             postForm = {
+                'pk': post.primaryKey,
                 'trashKind': post.trashKind,
+                'postKind': post.postKind,
                 'author': post.author,
                 'qty': post.qty,
                 'location': post.author.region,
-                'previewImage': ''
+                'content': post.content,
+                'created_at': str(post.created_at.strftime("%Y-%m-%d %H:%M:%S")),
+                'image': []
             }
             try:
-                postForm["previewImage"] = marketPostImage.objects.get(postModel=post, order=1)
+                images = marketPostImage.objects.filter(postModel=post).order_by('order')
+                images = list(images)
+                for image in images:
+                    postForm["image"].append(image.image)
             except ObjectDoesNotExist:
                 pass
             returnData["postList"].append(postForm)
         except ObjectDoesNotExist:
-            return JsonResponse(CUSTOM_CODE())
+            return JsonResponse(CUSTOM_CODE(status=404, message="There is no Exiting post", data=returnData), status=404)
         return JsonResponse(OK_200(data=returnData), status=200)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class artPostAPI(APIView):
+    def post(self, request):
+        returnData = {"pk": 0}
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
+        try:
+            title = request.data['title']
+            content = request.data['content']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
+        artPostModel = artPost(
+            content=content,
+            title=title,
+            author=request.user
+        )
+        artPostModel.save()
+        returnData["pk"] = artPostModel.primaryKey
+        try:
+            imageList = request.FILES.getlist['image']
+            imageCount = 1
+            for image in imageList:
+                imageModel = artPostImage(postModel=artPostModel, image=image, order=imageCount)
+                imageModel.save()
+                imageCount += 1
+        except (KeyError, ValueError):
+            pass
+        return JsonResponse(OK_200(data=returnData))
+
+    def get(self, request):
+        returnData = {
+            "postList": []
+        }
+        try:
+            pk = request.query_params['pk']
+        except (KeyError, ValueError):
+            try:
+                post_list = artPost.objects.all().order_by('created_at')
+                post_list = list(post_list)
+            except ObjectDoesNotExist:
+                return JsonResponse(OK_200(data=returnData), status=200)
+            for post in post_list:
+                postForm = {
+                    'pk': post.primaryKey,
+                    'title': post.title,
+                    'author': post.author,
+                    'content': post.content,
+                    'created_at': str(post.created_at.strftime("%Y-%m-%d %H:%M:%S")),
+                    'image': []
+                }
+                try:
+                    postForm["image"].append(artPostImage.objects.get(postModel=post, order=1).image)
+                except ObjectDoesNotExist:
+                    pass
+                returnData["postList"].append(postForm)
+            return JsonResponse(OK_200(data=returnData), status=200)
+        try:
+            post = marketPost.objects.get(primaryKey=int(pk))
+            postForm = {
+                'pk': post.primaryKey,
+                'title': post.title,
+                'author': post.author,
+                'content': post.content,
+                'created_at': str(post.created_at.strftime("%Y-%m-%d %H:%M:%S")),
+                'image': []
+            }
+            try:
+                images = artPostImage.objects.filter(postModel=post).order_by('order')
+                images = list(images)
+                for image in images:
+                    postForm["image"].append(image.image)
+            except ObjectDoesNotExist:
+                pass
+            returnData["postList"].append(postForm)
+        except ObjectDoesNotExist:
+            return JsonResponse(CUSTOM_CODE(status=404, message="There is no Exiting post", data=returnData), status=404)
+        return JsonResponse(OK_200(data=returnData), status=200)
