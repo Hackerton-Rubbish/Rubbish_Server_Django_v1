@@ -8,21 +8,18 @@ from imagekit.models import ProcessedImageField
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, password=None, nickname='익명', **extra_fields):
-        if not email:
-            raise ValueError('No Email.')
-        email = self.normalize_email(email)
-        user = self.model(email=email, password=password, nickname=nickname, **extra_fields)
+    def _create_user(self,  password=None, username='익명', **extra_fields):
+        user = self.model(password=password, username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
         return user
 
-    def create_user(self, email, password=None, nickname='익명', **extra_fields):
+    def create_user(self, password=None, username='익명', **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, password, nickname, **extra_fields)
+        return self._create_user(password, username, **extra_fields)
 
-    def create_superuser(self, email, password, nickname='Admin', **extra_fields):
+    def create_superuser(self, password, username='Admin', **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -31,7 +28,7 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError("Administrator must be 'is_superuser' is True")
 
-        return self._create_user(email, password, nickname, **extra_fields)
+        return self._create_user(password, username, **extra_fields)
 
 
 class emailAuth(models.Model):
@@ -45,19 +42,19 @@ class User(AbstractUser):
     objects = UserManager()
     primaryKey = models.BigAutoField(verbose_name='pk', db_column='pk', primary_key=True)
     email = models.EmailField(verbose_name='email', max_length=255, unique=True, primary_key=False)
-    nickname = models.CharField(max_length=8, default='익명', null=False, unique=True)
+    username = models.CharField(max_length=8, default='익명', null=False, unique=True)
     profileImgURL = models.ImageField(verbose_name='profile Image', upload_to='v1', null=True, default='v1/default/profile.jpg')
     region = models.CharField(max_length=50, default='서울', null=False, blank=True)
 
-    USERNAME_FIELD = 'nickname'
-    REQUIRED_FIELDS = ['email']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = []
     date_joined = models.DateTimeField('date joined', default=timezone.now)
 
     def __str__(self):
         return self.email
 
     def get_short_name(self):
-        return self.nickname
+        return self.username
 
     class Meta:
         verbose_name = 'user'

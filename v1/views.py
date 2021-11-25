@@ -94,7 +94,7 @@ class signupInfoInput(APIView):
         except ObjectDoesNotExist:
             return JsonResponse(CUSTOM_CODE(status=403, message='There is no E-mail', data=returnData), status=403)
         try:
-            User.objects.get(nickname=nickname)
+            User.objects.get(username=nickname)
         except ObjectDoesNotExist:
             returnData['validNickname'] = True
         try:
@@ -109,8 +109,8 @@ class signupInfoInput(APIView):
             try:
                 userModel = User(
                     email=email,
-                    nickname=nickname,
-                    passwd=passwd,
+                    username=nickname,
+                    password=passwd,
                     region=region
                 )
                 userModel.save()
@@ -119,9 +119,12 @@ class signupInfoInput(APIView):
                     role=role
                 )
                 userInfoModel.save()
+                authModel.delete()
                 return JsonResponse(OK_200(data=returnData), status=200)
             except (KeyError, ValueError):
                 return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
+            except IntegrityError:
+                returnData["validNickname"] = False
         return JsonResponse(CUSTOM_CODE(status=406, data=returnData, message='invalid value'))
 
 
@@ -133,7 +136,7 @@ class signinAPI(APIView):
             passwd = request.data['passwd']
         except (KeyError, ValueError):
             return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data={}), status=400)
-        user = authenticate(nickname=nickname, password=passwd)
+        user = authenticate(username=nickname, password=passwd)
         if user is not None:
             try:
                 token = Token.objects.create(user=user)
@@ -427,3 +430,52 @@ class artPostAPI(APIView):
         return JsonResponse(OK_200(data=returnData))
 
 
+    def get(self, request):
+        returnData = {
+            "postList": []
+        }
+        try:
+            pk = request.query_params['pk']
+        except (KeyError, ValueError):
+            try:
+                post_list = challengePost.objects.all().order_by('created_at')
+                post_list = list(post_list)
+            except ObjectDoesNotExist:
+                return JsonResponse(OK_200(data=returnData), status=200)
+            for post in post_list:
+                postForm = {
+                    'pk': post.primaryKey,
+                    'title': post.title,
+                    'author': post.author,
+                    'content': post.content,
+                    'authorship_pk': post.art.author,
+                    'created_at': str(post.created_at.strftime("%Y-%m-%d %H:%M:%S")),
+                    'image': []
+                }
+                try:
+                    postForm["image"].append(artPostImage.objects.get(postModel=post, order=1).image)
+                except ObjectDoesNotExist:
+                    pass
+                returnData["postList"].append(postForm)
+            return JsonResponse(OK_200(data=returnData), status=200)
+        try:
+            post = marketPost.objects.get(primaryKey=int(pk))
+            postForm = {
+                'pk': post.primaryKey,
+                'title': post.title,
+                'author': post.author,
+                'content': post.content,
+                'created_at': str(post.created_at.strftime("%Y-%m-%d %H:%M:%S")),
+                'image': []
+            }
+            try:
+                images = artPostImage.objects.filter(postModel=post).order_by('order')
+                images = list(images)
+                for image in images:
+                    postForm["image"].append(image.image)
+            except ObjectDoesNotExist:
+                pass
+            returnData["postList"].append(postForm)
+        except ObjectDoesNotExist:
+            return JsonResponse(CUSTOM_CODE(status=404, message="There is no Exiting post", data=returnData), status=404)
+        return JsonResponse(OK_200(data=returnData), status=200)
