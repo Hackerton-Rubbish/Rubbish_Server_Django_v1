@@ -230,5 +230,48 @@ class marketPostAPI(APIView):
             pass
         return JsonResponse(OK_200(data=returnData))
 
+    def get(self, request):
+        returnData = {
+            "postList": []
+        }
+        try:
+            pk = request.data['pk']
+        except (KeyError, ValueError):
+            try:
+                post_list = marketPost.objects.all().order_by('created_at')
+                post_list = list(post_list)
+            except ObjectDoesNotExist:
+                return JsonResponse(OK_200(data=returnData), status=200)
+            for post in post_list:
+                postForm = {
+                    'trashKind': post.trashKind,
+                    'author': post.author,
+                    'qty': post.qty,
+                    'location': post.author.region,
+                    'previewImage': ''
+                }
+                try:
+                    postForm["previewImage"] = marketPostImage.objects.get(postModel=post, order=1)
+                except ObjectDoesNotExist:
+                    pass
+                returnData["postList"].append(postForm)
+            return JsonResponse(OK_200(data=returnData), status=200)
+        try:
+            post = marketPost.objects.get(primaryKey=int(pk))
+            postForm = {
+                'trashKind': post.trashKind,
+                'author': post.author,
+                'qty': post.qty,
+                'location': post.author.region,
+                'previewImage': ''
+            }
+            try:
+                postForm["previewImage"] = marketPostImage.objects.get(postModel=post, order=1)
+            except ObjectDoesNotExist:
+                pass
+            returnData["postList"].append(postForm)
+        except ObjectDoesNotExist:
+            return JsonResponse(CUSTOM_CODE())
+        return JsonResponse(OK_200(data=returnData), status=200)
 
 
