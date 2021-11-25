@@ -395,8 +395,35 @@ class artPostAPI(APIView):
         return JsonResponse(OK_200(data=returnData), status=200)
 
 
-# @method_decorator(csrf_exempt, name='dispatch')
-# class artPostAPI(APIView):
-#     def post(self, request):
+@method_decorator(csrf_exempt, name='dispatch')
+class artPostAPI(APIView):
+    def post(self, request):
+        returnData = {"pk": 0}
+        if not request.user.is_authenticated or request.user.is_anonymous:
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
+        try:
+            pk = request.data['pk']
+            title = request.data['title']
+            content = request.data['content']
+        except (KeyError, ValueError):
+            return JsonResponse(BAD_REQUEST_400(message='Some Values are missing', data=returnData), status=400)
+        challengePostModel = challengePost(
+            art=artPost.objects.get(primaryKey=pk),
+            content=content,
+            title=title,
+            author=request.user
+        )
+        challengePostModel.save()
+        returnData["pk"] = challengePostModel.primaryKey
+        try:
+            imageList = request.FILES.getlist['image']
+            imageCount = 1
+            for image in imageList:
+                imageModel = challengePostImage(postModel=challengePostModel, image=image, order=imageCount)
+                imageModel.save()
+                imageCount += 1
+        except (KeyError, ValueError):
+            pass
+        return JsonResponse(OK_200(data=returnData))
 
 

@@ -112,3 +112,17 @@ class artPostImage(models.Model):
     postModel = models.ForeignKey("artPost", on_delete=models.CASCADE, null=False, blank=False)
     image = ProcessedImageField(upload_to='v1', null=True, format='JPEG', options={'quality': 90})
 
+
+class challengePost(models.Model):
+    primaryKey = models.BigAutoField(verbose_name='pk', db_column='pk', primary_key=True)
+    author = models.ForeignKey("User", on_delete=models.CASCADE, null=False, blank=False)
+    art = models.ForeignKey("artPost", on_delete=models.CASCADE, null=False, blank=False)
+    title = models.CharField(max_length=40, default='제목', null=False, blank=True)
+    content = models.TextField(default='', null=False, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+class challengePostImage(models.Model):
+    primaryKey = models.BigAutoField(verbose_name='pk', db_column='pk', primary_key=True)
+    order = models.IntegerField(verbose_name='image_order', null=False, blank=True)
+    postModel = models.ForeignKey("artPost", on_delete=models.CASCADE, null=False, blank=False)
+    image = ProcessedImageField(upload_to='v1', null=True, format='JPEG', options={'quality': 90})
