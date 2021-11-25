@@ -91,7 +91,7 @@ class marketPost(models.Model):
 
 class marketPostImage(models.Model):
     primaryKey = models.BigAutoField(verbose_name='pk', db_column='pk', primary_key=True)
-    order = models.IntegerField(verbose_name='image_order', null=False, blank=True)
+    order = models.IntegerField(verbose_name='image_order', db_column='image_order', null=False, blank=True)
     postModel = models.ForeignKey("marketPost", on_delete=models.CASCADE, null=False, blank=False)
     image = ProcessedImageField(upload_to='v1', null=True, format='JPEG', options={'quality': 90})
 
@@ -105,7 +105,7 @@ class artPost(models.Model):
 
 class artPostImage(models.Model):
     primaryKey = models.BigAutoField(verbose_name='pk', db_column='pk', primary_key=True)
-    order = models.IntegerField(verbose_name='image_order', null=False, blank=True)
+    order = models.IntegerField(verbose_name='image_order', db_column='image_order', null=False, blank=True)
     postModel = models.ForeignKey("artPost", on_delete=models.CASCADE, null=False, blank=False)
     image = ProcessedImageField(upload_to='v1', null=True, format='JPEG', options={'quality': 90})
 
@@ -120,6 +120,6 @@ class challengePost(models.Model):
 
 class challengePostImage(models.Model):
     primaryKey = models.BigAutoField(verbose_name='pk', db_column='pk', primary_key=True)
-    order = models.IntegerField(verbose_name='image_order', null=False, blank=True)
+    order = models.IntegerField(verbose_name='image_order', db_column='image_order', null=False, blank=True)
     postModel = models.ForeignKey("artPost", on_delete=models.CASCADE, null=False, blank=False)
     image = ProcessedImageField(upload_to='v1', null=True, format='JPEG', options={'quality': 90})
