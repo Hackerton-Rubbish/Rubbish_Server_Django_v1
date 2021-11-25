@@ -399,7 +399,7 @@ class artPostAPI(APIView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class artPostAPI(APIView):
+class challengePostAPI(APIView):
     def post(self, request):
         returnData = {"pk": 0}
         if not request.user.is_authenticated or request.user.is_anonymous:
@@ -448,7 +448,7 @@ class artPostAPI(APIView):
                     'title': post.title,
                     'author': post.author,
                     'content': post.content,
-                    'authorship_pk': post.art.author,
+                    'authorship_pk': post.art.primaryKey,
                     'created_at': str(post.created_at.strftime("%Y-%m-%d %H:%M:%S")),
                     'image': []
                 }
@@ -465,6 +465,7 @@ class artPostAPI(APIView):
                 'title': post.title,
                 'author': post.author,
                 'content': post.content,
+                'authorship_pk': post.art.primaryKey,
                 'created_at': str(post.created_at.strftime("%Y-%m-%d %H:%M:%S")),
                 'image': []
             }

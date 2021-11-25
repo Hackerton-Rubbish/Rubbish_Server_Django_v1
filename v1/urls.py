@@ -19,4 +19,6 @@ urlpatterns = [
     path('post/market/connect/', views.connectUser.as_view(), name='index'),
     path('post/junk-art', views.artPostAPI.as_view(), name='index'),
     path('post/junk-art/', views.artPostAPI.as_view(), name='index'),
+    path('post/junk-art/challenge', views.challengePostAPI.as_view(), name='index'),
+    path('post/junk-art/challenge/', views.challengePostAPI.as_view(), name='index'),
 ]
