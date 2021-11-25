@@ -43,7 +43,7 @@ class User(AbstractUser):
     primaryKey = models.BigAutoField(verbose_name='pk', db_column='pk', primary_key=True)
     email = models.EmailField(verbose_name='email', max_length=255, unique=True, primary_key=False)
     username = models.CharField(max_length=8, default='익명', null=False, unique=True)
-    profileImgURL = models.ImageField(verbose_name='profile Image', upload_to='v1', null=True, default='v1/default/profile.jpg')
+    profileImgURL = models.ImageField(verbose_name='profile Image', upload_to='v1', null=True, default='v1/profile.jpg')
     region = models.CharField(max_length=50, default='서울', null=False, blank=True)
 
     USERNAME_FIELD = 'username'

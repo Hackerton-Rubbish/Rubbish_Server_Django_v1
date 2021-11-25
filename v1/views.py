@@ -259,7 +259,7 @@ class marketPostAPI(APIView):
                     'image': []
                 }
                 try:
-                    postForm["image"].append(marketPostImage.objects.get(postModel=post).image)
+                    postForm["image"].append(marketPostImage.objects.get(postModel=post).image.url)
                 except ObjectDoesNotExist:
                     pass
                 returnData["postList"].append(postForm)
@@ -281,7 +281,7 @@ class marketPostAPI(APIView):
                 images = marketPostImage.objects.filter(postModel=post).order_by('order')
                 images = list(images)
                 for image in images:
-                    postForm["image"].append(image.image)
+                    postForm["image"].append(image.image.url)
             except ObjectDoesNotExist:
                 pass
             returnData["postList"].append(postForm)
@@ -362,7 +362,7 @@ class artPostAPI(APIView):
                     'image': []
                 }
                 try:
-                    postForm["image"].append(artPostImage.objects.get(postModel=post).image)
+                    postForm["image"].append(artPostImage.objects.get(postModel=post).image.url)
                 except ObjectDoesNotExist:
                     pass
                 returnData["postList"].append(postForm)
@@ -381,7 +381,7 @@ class artPostAPI(APIView):
                 images = artPostImage.objects.filter(postModel=post).order_by('order')
                 images = list(images)
                 for image in images:
-                    postForm["image"].append(image.image)
+                    postForm["image"].append(image.image.url)
             except ObjectDoesNotExist:
                 pass
             returnData["postList"].append(postForm)
@@ -442,7 +442,7 @@ class challengePostAPI(APIView):
                     'image': []
                 }
                 try:
-                    postForm["image"].append(artPostImage.objects.get(postModel=post).image)
+                    postForm["image"].append(artPostImage.objects.get(postModel=post).image.url)
                 except ObjectDoesNotExist:
                     pass
                 returnData["postList"].append(postForm)
@@ -462,7 +462,7 @@ class challengePostAPI(APIView):
                 images = artPostImage.objects.filter(postModel=post).order_by('order')
                 images = list(images)
                 for image in images:
-                    postForm["image"].append(image.image)
+                    postForm["image"].append(image.image.url)
             except ObjectDoesNotExist:
                 pass
             returnData["postList"].append(postForm)
